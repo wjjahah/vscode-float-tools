@@ -20,11 +20,16 @@
 ### 0.0.1
 创建插件
 
+### 0.0.2
+修改描述
+
+### 0.0.3
+修改正则，修复`1.2345e6`识别成`1.2345`问题
 
 ## For more information
 
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
 * [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-* [float-tools github](https://github.com/wjjahah/vscode-float-tools/)
+* [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)
 
 **Enjoy!**

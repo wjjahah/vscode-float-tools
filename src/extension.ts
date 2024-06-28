@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
       provideHover(document, position, token) {
         const range = document.getWordRangeAtPosition(
           position,
-          /(-?(0[xX](\.[0-9a-fA-F]+|[0-9a-fA-F]+(\.[0-9a-fA-F]*)?)[pP][+-]?\d+|0[xX][0-9a-fA-F]+|\d+(\.\d*)?|\.\d+([eE][+-]?\d+)?))/
+          /(-?(0[xX][0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))/
         );
         const word = range ? document.getText(range) : undefined;
 
