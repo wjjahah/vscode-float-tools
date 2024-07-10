@@ -297,7 +297,7 @@ type NumberType =
 
 function identifyNumberType(input: string): NumberType {
   // 正则表达式匹配十六进制数字
-  const hexRegex = /^0x[0-9A-Fa-f]+$/;
+  const hexRegex = /^[+-]?0x[0-9A-Fa-f]+$/;
 
   // 正则表达式匹配整数
   const integerRegex = /^[+-]?\d+$/;
@@ -344,6 +344,8 @@ export function pasreNumberMarkdown(input: string): string {
   let hexfloat64 = "unknown";
 
   if (strtype === "hex") {
+    input = input.replace(/^\+/, "");
+    input = input.replace(/^-/, "");
     if (input.length < 10) {
       hex32 = "0x" + formatHex32(input);
       hex64 = "0x" + formatHex64(input);
@@ -424,6 +426,8 @@ export function pasreNumberWebview(input: string): string {
   let hexfloat64 = "unknown";
 
   if (strtype === "hex") {
+    input = input.replace(/^\+/, "");
+    input = input.replace(/^-/, "");
     if (input.length < 10) {
       hex32 = "0x" + formatHex32(input);
       hex64 = "0x" + formatHex64(input);
