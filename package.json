@@ -1,9 +1,9 @@
 {
   "name": "float-tools",
   "displayName": "float-tools",
-  "description": "\"一个vscode插件，用于浮点数相关的各种格式之间的转换\"",
+  "description": "一个vscode插件，用于浮点数相关的各种格式之间的转换",
   "icon": "logo/logo.ico",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "wjjahah",
   "repository": {
     "type": "git",
@@ -31,19 +31,31 @@
       }
     ],
     "languages": [
-            {
-                "id": "c",
-                "aliases": ["c", "C"],
-                "extensions": [".c"],
-                "configuration": "./language-configuration.json"
-            },
-            {
-              "id": "cpp",
-              "aliases": ["Cpp", "CPP"],
-              "extensions": [".c", ".cpp", ".maca"],
-              "configuration": "./language-configuration.json"
-          }
-        ]
+      {
+        "id": "c",
+        "aliases": [
+          "c",
+          "C"
+        ],
+        "extensions": [
+          ".c"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "cpp",
+        "aliases": [
+          "Cpp",
+          "CPP"
+        ],
+        "extensions": [
+          ".c",
+          ".cpp",
+          ".maca"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

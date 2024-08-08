@@ -29,10 +29,11 @@
 ### 0.0.4
 增加处理，可以将`-0x123` 作为 `0x123` 处理
 
+### 0.0.5
+增加整数类型显示，改变显示风格
+
 ## For more information
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)
 
 **Enjoy!**

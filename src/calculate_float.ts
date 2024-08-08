@@ -313,168 +313,187 @@ function identifyNumberType(input: string): NumberType {
 
   if (hexRegex.test(input)) {
     return "hex";
+  } else if (integerRegex.test(input)) {
+    return "integer";
   } else if (hexFloatRegex.test(input)) {
     return "hex float";
   } else if (scientificFloatRegex.test(input)) {
     return "scientific float";
   } else if (floatRegex.test(input)) {
     return "float";
-  } else if (integerRegex.test(input)) {
-    return "integer";
   } else {
     return "unknown";
   }
 }
 
-export function pasreNumberMarkdown(input: string): string {
-  const strtype = identifyNumberType(input);
-  if (strtype === "unknown") {
-    return "";
-  }
-
-  let hoverMessage = "";
-
-  let hex32 = "unknown";
-  let hex64 = "unknown";
+function pasreNumber(input: string): any {
+  let floathex32 = "unknown";
+  let floathex64 = "unknown";
   let float32 = "unknown";
   let float64 = "unknown";
-  let int32 = "unknown";
-  let int64 = "unknown";
+  let floatint32 = "unknown";
+  let floatint64 = "unknown";
   let hexfloat32 = "unknown";
   let hexfloat64 = "unknown";
 
+  let hex32 = "unknown";
+  let hex64 = "unknown";
+  let int32 = "unknown";
+  let int64 = "unknown";
+
+  const strtype = identifyNumberType(input);
   if (strtype === "hex") {
     input = input.replace(/^\+/, "");
     input = input.replace(/^-/, "");
     if (input.length < 10) {
-      hex32 = "0x" + formatHex32(input);
-      hex64 = "0x" + formatHex64(input);
+      floathex32 = "0x" + formatHex32(input);
+      floathex64 = "0x" + formatHex64(input);
+      hex32 = floathex32;
+      hex64 = floathex64;
     } else if (input.length === 10) {
-      hex32 = "0x" + formatHex32(input);
+      floathex32 = "0x" + formatHex32(input);
+      hex32 = floathex32;
     } else if (input.length <= 18) {
-      hex64 = "0x" + formatHex64(input);
+      floathex64 = "0x" + formatHex64(input);
+      hex64 = floathex64;
     }
   } else if (strtype === "float") {
     const float = parseFloat(input);
     if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
-      hex64 = float64ToHex64(input);
+      floathex64 = float64ToHex64(input);
     } else {
-      hex32 = float32ToHex32(input);
-      hex64 = float64ToHex64(input);
+      floathex32 = float32ToHex32(input);
+      floathex64 = float64ToHex64(input);
     }
   } else if (strtype === "scientific float") {
     const float = parseFloat(input);
     if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
-      hex64 = float64ToHex64(float.toString());
+      floathex64 = float64ToHex64(float.toString());
     } else {
-      hex32 = float32ToHex32(float.toString());
-      hex64 = float64ToHex64(float.toString());
+      floathex32 = float32ToHex32(float.toString());
+      floathex64 = float64ToHex64(float.toString());
     }
   } else if (strtype === "integer") {
-    const integer = parseInt(input, 10);
-    if (integer > 0xffffffff || integer < 0xffffffff) {
-      hex64 = "0x" + integer.toString(16);
+    const float = parseFloat(input);
+    if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
+      floathex64 = float64ToHex64(float.toString());
     } else {
-      hex32 = "0x" + integer.toString(16);
-      hex64 = "0x" + integer.toString(16);
+      floathex32 = float32ToHex32(float.toString());
+      floathex64 = float64ToHex64(float.toString());
+    }
+  
+    const integer = parseInt(input, 10);
+    if (integer > 0xffffffff || integer < -0xffffffff) {
+      hex64 = "0x" + formatHex64(integer.toString(16));
+    } else {
+      hex32 = "0x" + formatHex32(integer.toString(16));
+      hex64 = "0x" + formatHex64(integer.toString(16));
     }
   } else if (strtype === "hex float") {
-    hex32 = hexFloat32ToHex32(input);
-    hex64 = hexFloat64ToHex64(input);
+    floathex32 = hexFloat32ToHex32(input);
+    floathex64 = hexFloat64ToHex64(input);
   }
 
-  if (hex32 !== "unknown" || hex64 !== "unknown") {
-    hoverMessage = hoverMessage + "| Formart | Output |\n";
-    hoverMessage = hoverMessage + "|:--------------:|--------------|\n";
+
+  if (floathex32 !== "unknown") {
+    float32 = hex32ToFloat32(floathex32);
+    floatint32 = parseInt(floathex32, 16).toString();
+    hexfloat32 = hex32ToHexFloat32(floathex32);
+  }
+  if (floathex64 !== "unknown") {
+    float64 = hex64ToFloat64(floathex64);
+    floatint64 = parseInt(floathex64, 16).toString();
+    hexfloat64 = hex64ToHexFloat64(floathex64);
   }
   if (hex32 !== "unknown") {
-    float32 = hex32ToFloat32(hex32);
     int32 = parseInt(hex32, 16).toString();
-    hexfloat32 = hex32ToHexFloat32(hex32);
-    hoverMessage = hoverMessage + `| %08x | ${hex32} |` + "\n";
-    hoverMessage = hoverMessage + `| %d | ${int32} |` + "\n";
-    hoverMessage = hoverMessage + `| %e | ${float32} |` + "\n";
-    hoverMessage = hoverMessage + `| %a | ${hexfloat32} |` + "\n";
   }
   if (hex64 !== "unknown") {
-    float64 = hex64ToFloat64(hex64);
     int64 = parseInt(hex64, 16).toString();
-    hexfloat64 = hex64ToHexFloat64(hex64);
-    hoverMessage = hoverMessage + `| %016llx | ${hex64} |` + "\n";
-    hoverMessage = hoverMessage + `| %lld | ${int64} |` + "\n";
-    hoverMessage = hoverMessage + `| %e | ${float64} |` + "\n";
-    hoverMessage = hoverMessage + `| %a | ${hexfloat64} |` + "\n";
+  }
+
+  let floatdata: any = {};
+  let intdata: any = {};
+
+  floatdata.floathex32 = floathex32;
+  floatdata.floathex64 = floathex64;
+  floatdata.float32 = float32;
+  floatdata.float64 = float64;
+  floatdata.floatint32 = floatint32;
+  floatdata.floatint64 = floatint64;
+  floatdata.hexfloat32 = hexfloat32;
+  floatdata.hexfloat64 = hexfloat64;
+
+  intdata.hex32 = hex32;
+  intdata.hex64 = hex64;
+  intdata.int32 = int32;
+  intdata.int64 = int64;
+
+  return {floatdata, intdata};
+}
+
+export function pasreNumberMarkdown(input: string): string {
+  let {floatdata, intdata} = pasreNumber(input);
+
+  let hoverMessage = "";
+
+  let floathex32 = floatdata.floathex32;
+  let floathex64 = floatdata.floathex64;
+  let float32 = floatdata.float32;
+  let float64 = floatdata.float64;
+  let floatint32 = floatdata.floatint32;
+  let floatint64 = floatdata.floatint64;
+  let hexfloat32 = floatdata.hexfloat32;
+  let hexfloat64 = floatdata.hexfloat64;
+
+  let hex32 = intdata.hex32;
+  let hex64 = intdata.hex64;
+  let int32 = intdata.int32;
+  let int64 = intdata.int64;
+
+  if (floathex32 !== "unknown" || floathex64 !== "unknown") {
+    hoverMessage = hoverMessage + "| dataType | formart | output |\n";
+    hoverMessage = hoverMessage + "|:--------------|:--------------|--------------|\n";
+  }
+  if (floathex32 !== "unknown") {
+    hoverMessage = hoverMessage + `| float | %08x | ${floathex32} |` + "\n";
+    hoverMessage = hoverMessage + `| float | %d | ${floatint32} |` + "\n";
+    hoverMessage = hoverMessage + `| float | %e | ${float32} |` + "\n";
+    hoverMessage = hoverMessage + `| float | %a | ${hexfloat32} |` + "\n";
+  }
+  if (floathex64 !== "unknown") {
+    hoverMessage = hoverMessage + `| double | %016llx | ${floathex64} |` + "\n";
+    hoverMessage = hoverMessage + `| double | %lld | ${floatint64} |` + "\n";
+    hoverMessage = hoverMessage + `| double | %e | ${float64} |` + "\n";
+    hoverMessage = hoverMessage + `| double | %a | ${hexfloat64} |` + "\n";
+  }
+  if (hex32 !== "unknown") {
+    hoverMessage = hoverMessage + `| int | %08x | ${hex32} |` + "\n";
+    hoverMessage = hoverMessage + `| int | %d | ${int32} |` + "\n";
+  }
+  if (hex64 !== "unknown") {
+    hoverMessage = hoverMessage + `| long | %016llx | ${hex64} |` + "\n";
+    hoverMessage = hoverMessage + `| long | %lld | ${int64} |` + "\n";
   }
   return hoverMessage;
 }
 
 export function pasreNumberWebview(input: string): string {
-  const strtype = identifyNumberType(input);
-  if (strtype === "unknown") {
-    return "";
-  }
+  let {floatdata, intdata} = pasreNumber(input);
 
-  let hoverMessage = "";
+  let floathex32 = floatdata.floathex32;
+  let floathex64 = floatdata.floathex64;
+  let float32 = floatdata.float32;
+  let float64 = floatdata.float64;
+  let floatint32 = floatdata.floatint32;
+  let floatint64 = floatdata.floatint64;
+  let hexfloat32 = floatdata.hexfloat32;
+  let hexfloat64 = floatdata.hexfloat64;
 
-  let hex32 = "unknown";
-  let hex64 = "unknown";
-  let float32 = "unknown";
-  let float64 = "unknown";
-  let int32 = "unknown";
-  let int64 = "unknown";
-  let hexfloat32 = "unknown";
-  let hexfloat64 = "unknown";
-
-  if (strtype === "hex") {
-    input = input.replace(/^\+/, "");
-    input = input.replace(/^-/, "");
-    if (input.length < 10) {
-      hex32 = "0x" + formatHex32(input);
-      hex64 = "0x" + formatHex64(input);
-    } else if (input.length === 10) {
-      hex32 = "0x" + formatHex32(input);
-    } else if (input.length <= 18) {
-      hex64 = "0x" + formatHex64(input);
-    }
-  } else if (strtype === "float") {
-    const float = parseFloat(input);
-    if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
-      hex64 = float64ToHex64(input);
-    } else {
-      hex32 = float32ToHex32(input);
-      hex64 = float64ToHex64(input);
-    }
-  } else if (strtype === "scientific float") {
-    const float = parseFloat(input);
-    if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
-      hex64 = float64ToHex64(float.toString());
-    } else {
-      hex32 = float32ToHex32(float.toString());
-      hex64 = float64ToHex64(float.toString());
-    }
-  } else if (strtype === "integer") {
-    const integer = parseInt(input, 10);
-    if (integer > 0xffffffff || integer < 0xffffffff) {
-      hex64 = "0x" + integer.toString(16);
-    } else {
-      hex32 = "0x" + integer.toString(16);
-      hex64 = "0x" + integer.toString(16);
-    }
-  } else if (strtype === "hex float") {
-    hex32 = hexFloat32ToHex32(input);
-    hex64 = hexFloat64ToHex64(input);
-  }
-
-  if (hex32 !== "unknown") {
-    float32 = hex32ToFloat32(hex32);
-    int32 = parseInt(hex32, 16).toString();
-    hexfloat32 = hex32ToHexFloat32(hex32);
-  }
-  if (hex64 !== "unknown") {
-    float64 = hex64ToFloat64(hex64);
-    int64 = parseInt(hex64, 16).toString();
-    hexfloat64 = hex64ToHexFloat64(hex64);
-  }
+  let hex32 = intdata.hex32;
+  let hex64 = intdata.hex64;
+  let int32 = intdata.int32;
+  let int64 = intdata.int64;
 
   return `
         <!DOCTYPE html>
@@ -510,16 +529,18 @@ export function pasreNumberWebview(input: string): string {
             <h2>Select Number All Formart Table</h2>
             <table>
                 <tr>
-                    <th>Formart</th>
-                    <th>Output</th>
+                    <th>dataType</th>
+                    <th>formart</th>
+                    <th>output</th>
                 </tr>
                 <tr>
+                    <td rowspan="4">float</td>
                     <td>%08x</td>
-                    <td>${hex32}</td>
+                    <td>${floathex32}</td>
                 </tr>
                 <tr>
                     <td>%d</td>
-                    <td>${int32}</td>
+                    <td>${floatint32}</td>
                 </tr>
                 <tr>
                     <td>%e</td>
@@ -530,12 +551,13 @@ export function pasreNumberWebview(input: string): string {
                     <td>${hexfloat32}</td>
                 </tr>
                 <tr>
+                    <td rowspan="4">double</td>
                     <td>%016llx</td>
-                    <td>${hex64}</td>
+                    <td>${floathex64}</td>
                 </tr>
                 <tr>
                     <td>%lld</td>
-                    <td>${int64}</td>
+                    <td>${floatint64}</td>
                 </tr>
                 <tr>
                     <td>%e</td>
@@ -544,6 +566,24 @@ export function pasreNumberWebview(input: string): string {
                 <tr>
                     <td>%a</td>
                     <td>${hexfloat64}</td>
+                </tr>
+                <tr>
+                    <td rowspan="2">int</td>
+                    <td>%08x</td>
+                    <td>${hex32}</td>
+                </tr>
+                <tr>
+                    <td>%d</td>
+                    <td>${int32}</td>
+                </tr>
+                <tr>
+                    <td rowspan="2">long</td>
+                    <td>%016llx</td>
+                    <td>${hex64}</td>
+                </tr>
+                <tr>
+                    <td>%ld</td>
+                    <td>${int64}</td>
                 </tr>
             </table>
         </body>
