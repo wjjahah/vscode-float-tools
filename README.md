@@ -32,6 +32,9 @@
 ### 0.0.5
 增加整数类型显示，改变显示风格
 
+### 0.0.6
+增加默认汇编文件的支持
+
 ## For more information
 
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)

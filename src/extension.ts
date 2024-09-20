@@ -3,6 +3,32 @@
 import * as vscode from "vscode";
 import { pasreNumberMarkdown, pasreNumberWebview } from "./calculate_float";
 
+class MyHoverProvider {
+  provideHover(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken
+  ): vscode.ProviderResult<vscode.Hover> {
+    const range = document.getWordRangeAtPosition(
+      position,
+      /(-?(0[xX][0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))/
+    );
+    const word = range ? document.getText(range) : undefined;
+
+    if (word) {
+      const retMessage = pasreNumberMarkdown(word);
+
+      if (retMessage !== "") {
+        const hoverMessage = new vscode.MarkdownString(retMessage);
+        hoverMessage.isTrusted = true; // 允许使用 HTML 标签
+        // console.log(`retMessage = (${hoverMessage})`);
+        return new vscode.Hover(hoverMessage);
+      }
+    }
+    return undefined;
+  }
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -46,34 +72,24 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // 注册一个 Hover 提供者
-  const hoverProvider = vscode.languages.registerHoverProvider(
+  const hoverProviderC = vscode.languages.registerHoverProvider(
+    { scheme: "file", language: "c" },
+    new MyHoverProvider()
+  );
+
+  const hoverProviderCpp = vscode.languages.registerHoverProvider(
     { scheme: "file", language: "cpp" },
-    {
-      provideHover(document, position, token) {
-        const range = document.getWordRangeAtPosition(
-          position,
-          /(-?(0[xX][0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))/
-        );
-        const word = range ? document.getText(range) : undefined;
+    new MyHoverProvider()
+  );
 
-        if (word) {
-          const retMessage = pasreNumberMarkdown(word);
-
-          if (retMessage !== "") {
-            const hoverMessage = new vscode.MarkdownString(retMessage);
-            hoverMessage.isTrusted = true; // 允许使用 HTML 标签
-            // console.log(`retMessage = (${hoverMessage})`);
-            return new vscode.Hover(hoverMessage);
-          }
-        }
-        return undefined;
-      },
-    }
+  const hoverProviderAsm = vscode.languages.registerHoverProvider(
+    { scheme: "file", language: "asm" },
+    new MyHoverProvider()
   );
 
   context.subscriptions.push(convertSelectNum);
-  context.subscriptions.push(hoverProvider);
+  context.subscriptions.push(hoverProviderC, hoverProviderCpp, hoverProviderAsm);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
