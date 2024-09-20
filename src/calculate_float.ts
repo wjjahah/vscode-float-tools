@@ -297,7 +297,7 @@ type NumberType =
 
 function identifyNumberType(input: string): NumberType {
   // 正则表达式匹配十六进制数字
-  const hexRegex = /^[+-]?0x[0-9A-Fa-f]+$/;
+  const hexRegex = /^[+-]?(0[xX])?[0-9A-Fa-f]+$/;
 
   // 正则表达式匹配整数
   const integerRegex = /^[+-]?\d+$/;
@@ -309,7 +309,7 @@ function identifyNumberType(input: string): NumberType {
   const scientificFloatRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
 
   // 正则表达式匹配十六进制浮点数
-  const hexFloatRegex = /^[+-]?0x[0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[+-]?\d+$/;
+  const hexFloatRegex = /^[+-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[+-]?\d+$/;
 
   if (hexRegex.test(input)) {
     return "hex";
