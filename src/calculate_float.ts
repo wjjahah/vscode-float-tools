@@ -296,11 +296,11 @@ type NumberType =
   | "unknown";
 
 function identifyNumberType(input: string): NumberType {
-  // 正则表达式匹配十六进制数字
-  const hexRegex = /^[+-]?(0[xX])?[0-9A-Fa-f]+$/;
-
   // 正则表达式匹配整数
   const integerRegex = /^[+-]?\d+$/;
+
+  // 正则表达式匹配十六进制数字
+  const hexRegex = /^[+-]?(0[xX])?[0-9A-Fa-f]+$/;
 
   // 正则表达式匹配浮点数
   const floatRegex = /^[+-]?\d+(\.\d+)?$/;
@@ -311,10 +311,10 @@ function identifyNumberType(input: string): NumberType {
   // 正则表达式匹配十六进制浮点数
   const hexFloatRegex = /^[+-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[+-]?\d+$/;
 
-  if (hexRegex.test(input)) {
-    return "hex";
-  } else if (integerRegex.test(input)) {
+  if (integerRegex.test(input)) {
     return "integer";
+  } else if (hexRegex.test(input)) {
+    return "hex";
   } else if (hexFloatRegex.test(input)) {
     return "hex float";
   } else if (scientificFloatRegex.test(input)) {

@@ -11,7 +11,7 @@ class MyHoverProvider {
   ): vscode.ProviderResult<vscode.Hover> {
     const range = document.getWordRangeAtPosition(
       position,
-      /(-?(0[xX][0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))/
+      /\b(-?((0[xX])?[0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))\b/
     );
     const word = range ? document.getText(range) : undefined;
 

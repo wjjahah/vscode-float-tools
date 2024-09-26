@@ -35,6 +35,9 @@
 ### 0.0.6
 增加默认汇编文件的支持
 
+### 0.0.6
+修复将整形识别成十六进制的错误
+
 ## For more information
 
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)
