@@ -3,7 +3,7 @@
   "displayName": "float-tools",
   "description": "一个vscode插件，用于浮点数相关的各种格式之间的转换",
   "icon": "logo/logo.ico",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "publisher": "wjjahah",
   "repository": {
     "type": "git",
@@ -51,7 +51,8 @@
         "extensions": [
           ".c",
           ".cpp",
-          ".maca"
+          ".maca",
+          ".cu"
         ],
         "configuration": "./language-configuration.json"
       },
@@ -66,6 +67,18 @@
           ".S",
           ".asm",
           ".ASM"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "others",
+        "aliases": ["Others"],
+        "extensions": [
+          ".log",
+          ".ll",
+          ".txt",
+          ".ptx",
+          ".ii"
         ],
         "configuration": "./language-configuration.json"
       }

@@ -161,7 +161,7 @@ function hex64ToHexFloat64(hexStr: string): string {
 }
 
 function hexFloat32ToHex32(hexStr: string): string {
-  const regex = /^([+-]?0x[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)p([+-]?\d+)$/i;
+  const regex = /^([\+\-]?0x[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)p([\+\-]?\d+)$/i;
   const match = hexStr.match(regex);
 
   if (!match) {
@@ -207,7 +207,7 @@ function hexFloat32ToHex32(hexStr: string): string {
 }
 
 function hexFloat64ToHex64(hexStr: string): string {
-  const regex = /^([+-]?0x[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)p([+-]?\d+)$/i;
+  const regex = /^([\+\-]?0x[0-9A-Fa-f]+(?:\.[0-9A-Fa-f]*)?)p([\+\-]?\d+)$/i;
   const match = hexStr.match(regex);
 
   if (!match) {
@@ -257,8 +257,8 @@ function hexFloat32ToFloat32(hex: string): string {
   if (hex.match(/^inf/i) || hex.match(/^nan/i)) {
     return hex;
   }
-  const match = hex.match(/^([+-]?0x([0-1])(\.)?([0-9a-fA-F]*)?p([+-]?\d+))$/);
-  // const match = hex.match(/^([+-]?0x[0-1]+(?:\.[0-9A-Fa-f]*)?)p([+-]?\d+)$/);
+  const match = hex.match(/^([\+\-]?0x([0-1])(\.)?([0-9a-fA-F]*)?p([\+\-]?\d+))$/);
+  // const match = hex.match(/^([\+\-]?0x[0-1]+(?:\.[0-9A-Fa-f]*)?)p([\+\-]?\d+)$/);
   if (!match) {
     throw new Error("Invalid hexadecimal floating-point string");
   }
@@ -297,19 +297,19 @@ type NumberType =
 
 function identifyNumberType(input: string): NumberType {
   // 正则表达式匹配整数
-  const integerRegex = /^[+-]?\d+$/;
+  const integerRegex = /^[\+\-]?\d+$/;
 
   // 正则表达式匹配十六进制数字
-  const hexRegex = /^[+-]?(0[xX])?[0-9A-Fa-f]+$/;
+  const hexRegex = /^[\+\-]?(0[xX])?[0-9A-Fa-f]+$/;
 
   // 正则表达式匹配浮点数
-  const floatRegex = /^[+-]?\d+(\.\d+)?$/;
+  const floatRegex = /^[\+\-]?\d+(\.\d+)?[fF]?$/;
 
   // 正则表达式匹配科学计数法表示的浮点数
-  const scientificFloatRegex = /^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/;
+  const scientificFloatRegex = /^[\+\-]?\d+(\.\d+)?([eE][\+\-]?\d+)?$/;
 
   // 正则表达式匹配十六进制浮点数
-  const hexFloatRegex = /^[+-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[+-]?\d+$/;
+  const hexFloatRegex = /^[\+\-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[\+\-]?\d+$/;
 
   if (integerRegex.test(input)) {
     return "integer";
@@ -454,6 +454,7 @@ export function pasreNumberMarkdown(input: string): string {
   if (floathex32 !== "unknown" || floathex64 !== "unknown") {
     hoverMessage = hoverMessage + "| dataType | formart | output |\n";
     hoverMessage = hoverMessage + "|:--------------|:--------------|--------------|\n";
+    hoverMessage = hoverMessage + `| select | ${identifyNumberType(input)} | ${input} |` + "\n";
   }
   if (floathex32 !== "unknown") {
     hoverMessage = hoverMessage + `| float | %08x | ${floathex32} |` + "\n";

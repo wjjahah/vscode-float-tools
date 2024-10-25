@@ -11,7 +11,7 @@ class MyHoverProvider {
   ): vscode.ProviderResult<vscode.Hover> {
     const range = document.getWordRangeAtPosition(
       position,
-      /\b(-?((0[xX])?[0-9a-fA-F]+((\.[0-9a-fA-F]+)?[pP][+-]?\d+)?|\d+(\.\d*)?([eE][+-]?\d+)?))\b/
+      /(\-?(0[xX])?[0-9a-fA-F\.eEpP\+\-]+)/
     );
     const word = range ? document.getText(range) : undefined;
 
@@ -22,6 +22,7 @@ class MyHoverProvider {
         const hoverMessage = new vscode.MarkdownString(retMessage);
         hoverMessage.isTrusted = true; // 允许使用 HTML 标签
         // console.log(`retMessage = (${hoverMessage})`);
+        // console.log(`word = (${word})`);
         return new vscode.Hover(hoverMessage);
       }
     }
@@ -87,8 +88,13 @@ export function activate(context: vscode.ExtensionContext) {
     new MyHoverProvider()
   );
 
+  const hoverProviderOthers = vscode.languages.registerHoverProvider(
+    { scheme: "file", language: "others" },
+    new MyHoverProvider()
+  );
+
   context.subscriptions.push(convertSelectNum);
-  context.subscriptions.push(hoverProviderC, hoverProviderCpp, hoverProviderAsm);
+  context.subscriptions.push(hoverProviderC, hoverProviderCpp, hoverProviderAsm, hoverProviderOthers);
 }
 
 // This method is called when your extension is deactivated
