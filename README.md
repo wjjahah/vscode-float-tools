@@ -41,6 +41,9 @@
 ### 0.0.8
 修复一些类型识别错误
 
+### 0.0.8
+修复负整数补码错误
+
 ## For more information
 
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)
