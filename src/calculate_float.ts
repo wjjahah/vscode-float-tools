@@ -1,16 +1,12 @@
 function formatHex32(hexStr: string): string {
   hexStr = hexStr.replace(/^0x/, "");
-  while (hexStr.length < 8) {
-    hexStr = "0" + hexStr;
-  }
+  hexStr = hexStr.padStart(8, '0');
   return hexStr.toUpperCase();
 }
 
 function formatHex64(hexStr: string): string {
   hexStr = hexStr.replace(/^0x/, "");
-  while (hexStr.length < 16) {
-    hexStr = "0" + hexStr;
-  }
+  hexStr = hexStr.padStart(16, '0');
   return hexStr.toUpperCase();
 }
 
@@ -287,6 +283,18 @@ function hexFloat64ToFloat64(hex: string): string {
   return hexFloat32ToFloat32(hex);
 }
 
+function formartIntegerHex(value: number, nbyte: number): string {
+  if (value < 0) {
+    const bits = nbyte * 8;
+    const mask = (1n << BigInt(bits)) - 1n; 
+
+    const complement = (~BigInt(Math.abs(value)) + 1n) & mask;
+    // const complement = (~Math.abs(value) + 1) & mask;
+    return complement.toString(16).padStart(nbyte, '0');
+  }
+  return value.toString(16);
+}
+
 type NumberType =
   | "hex"
   | "float"
@@ -384,10 +392,10 @@ function pasreNumber(input: string): any {
   
     const integer = parseInt(input, 10);
     if (integer > 0xffffffff || integer < -0xffffffff) {
-      hex64 = "0x" + formatHex64(integer.toString(16));
+      hex64 = "0x" + formatHex64(formartIntegerHex(integer, 8));
     } else {
-      hex32 = "0x" + formatHex32(integer.toString(16));
-      hex64 = "0x" + formatHex64(integer.toString(16));
+      hex32 = "0x" + formatHex32(formartIntegerHex(integer, 4));
+      hex64 = "0x" + formatHex64(formartIntegerHex(integer, 8));
     }
   } else if (strtype === "hex float") {
     floathex32 = hexFloat32ToHex32(input);
@@ -410,6 +418,17 @@ function pasreNumber(input: string): any {
   }
   if (hex64 !== "unknown") {
     int64 = parseInt(hex64, 16).toString();
+  }
+
+  if (strtype === "integer") {
+    const integer = parseInt(input, 10);
+    if (integer > 0xffffffff || integer < -0xffffffff) {
+      int32 = "unknown";
+      int64 = integer.toString();
+    } else {
+      int32 = integer.toString();
+      int64 = integer.toString();
+    }
   }
 
   let floatdata: any = {};
