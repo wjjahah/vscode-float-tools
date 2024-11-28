@@ -44,6 +44,12 @@
 ### 0.0.8
 修复负整数补码错误
 
+### 0.0.9
+修改readme
+
+### 0.1.0
+增加浮点数末尾f字母的匹配，修改整数的解释，增加%u类型解释，%d支持负数
+
 ## For more information
 
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)

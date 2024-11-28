@@ -107,9 +107,8 @@ function hex32ToHexFloat32(hexStr: string): string {
     .toString(16)
     .replace(/0*$/, "");
   hexMantissa = hexMantissa.slice(1);
-  return `${sign}0x1${hexMantissa === "" ? "" : "."}${hexMantissa}p${
-    exponent >= 0 ? "+" : ""
-  }${exponent}`;
+  return `${sign}0x1${hexMantissa === "" ? "" : "."}${hexMantissa}p${exponent >= 0 ? "+" : ""
+    }${exponent}`;
 }
 
 // 十六进制字符串转换为十六进制浮点表示（如 0x1.2345678p+10）
@@ -283,16 +282,30 @@ function hexFloat64ToFloat64(hex: string): string {
   return hexFloat32ToFloat32(hex);
 }
 
-function formartIntegerHex(value: number, nbyte: number): string {
+function formartIntegerHex(value: number, nbyte: 4 | 8): string {
   if (value < 0) {
     const bits = nbyte * 8;
-    const mask = (1n << BigInt(bits)) - 1n; 
+    const mask = (1n << BigInt(bits)) - 1n;
 
     const complement = (~BigInt(Math.abs(value)) + 1n) & mask;
     // const complement = (~Math.abs(value) + 1) & mask;
     return complement.toString(16).padStart(nbyte, '0');
   }
   return value.toString(16);
+}
+
+function integerHexToInt(hexStr: string, nbyte: 4 | 8): string {
+  const bitLength = nbyte * 8;
+  let num = BigInt(hexStr);
+
+  const isNegative = num >= (1n << BigInt(bitLength - 1));
+  const maxValue = -(1n << BigInt(bitLength));
+
+  if (isNegative) {
+      num = num + maxValue;
+      return Number(num).toString(10);
+  }
+  return Number(hexStr).toString(10);
 }
 
 type NumberType =
@@ -314,10 +327,10 @@ function identifyNumberType(input: string): NumberType {
   const floatRegex = /^[\+\-]?\d+(\.\d+)?[fF]?$/;
 
   // 正则表达式匹配科学计数法表示的浮点数
-  const scientificFloatRegex = /^[\+\-]?\d+(\.\d+)?([eE][\+\-]?\d+)?$/;
+  const scientificFloatRegex = /^[\+\-]?\d+(\.\d+)?([eE][\+\-]?\d+)?[fF]?$/;
 
   // 正则表达式匹配十六进制浮点数
-  const hexFloatRegex = /^[\+\-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[\+\-]?\d+$/;
+  const hexFloatRegex = /^[\+\-]?0[xX][0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?p[\+\-]?\d+[fF]?$/;
 
   if (integerRegex.test(input)) {
     return "integer";
@@ -339,8 +352,6 @@ function pasreNumber(input: string): any {
   let floathex64 = "unknown";
   let float32 = "unknown";
   let float64 = "unknown";
-  let floatint32 = "unknown";
-  let floatint64 = "unknown";
   let hexfloat32 = "unknown";
   let hexfloat64 = "unknown";
 
@@ -348,20 +359,23 @@ function pasreNumber(input: string): any {
   let hex64 = "unknown";
   let int32 = "unknown";
   let int64 = "unknown";
+  let uint32 = "unknown";
+  let uint64 = "unknown";
 
   const strtype = identifyNumberType(input);
   if (strtype === "hex") {
-    input = input.replace(/^\+/, "");
+    // input = input.replace(/^\+/, "");
     input = input.replace(/^-/, "");
-    if (input.length < 10) {
+    input = input.replace(/^0x/, "");
+    if (input.length < 8) {
       floathex32 = "0x" + formatHex32(input);
       floathex64 = "0x" + formatHex64(input);
       hex32 = floathex32;
       hex64 = floathex64;
-    } else if (input.length === 10) {
+    } else if (input.length === 8) {
       floathex32 = "0x" + formatHex32(input);
       hex32 = floathex32;
-    } else if (input.length <= 18) {
+    } else if (input.length <= 16) {
       floathex64 = "0x" + formatHex64(input);
       hex64 = floathex64;
     }
@@ -374,6 +388,7 @@ function pasreNumber(input: string): any {
       floathex64 = float64ToHex64(input);
     }
   } else if (strtype === "scientific float") {
+    input = input.replace(/[fF]$/, "");
     const float = parseFloat(input);
     if (float > 3.4028234663852886e38 || float < -3.4028234663852886e38) {
       floathex64 = float64ToHex64(float.toString());
@@ -389,15 +404,19 @@ function pasreNumber(input: string): any {
       floathex32 = float32ToHex32(float.toString());
       floathex64 = float64ToHex64(float.toString());
     }
-  
+
     const integer = parseInt(input, 10);
-    if (integer > 0xffffffff || integer < -0xffffffff) {
+    const integerHexLength = integer.toString(16).replace(/^-/, "").length;
+    if (integerHexLength > 8) {
       hex64 = "0x" + formatHex64(formartIntegerHex(integer, 8));
+    } else if(integerHexLength === 8){
+      hex32 = "0x" + formatHex32(formartIntegerHex(integer, 4));
     } else {
       hex32 = "0x" + formatHex32(formartIntegerHex(integer, 4));
       hex64 = "0x" + formatHex64(formartIntegerHex(integer, 8));
     }
   } else if (strtype === "hex float") {
+    input = input.replace(/[fF]$/, "");
     floathex32 = hexFloat32ToHex32(input);
     floathex64 = hexFloat64ToHex64(input);
   }
@@ -405,30 +424,19 @@ function pasreNumber(input: string): any {
 
   if (floathex32 !== "unknown") {
     float32 = hex32ToFloat32(floathex32);
-    floatint32 = parseInt(floathex32, 16).toString();
     hexfloat32 = hex32ToHexFloat32(floathex32);
   }
   if (floathex64 !== "unknown") {
     float64 = hex64ToFloat64(floathex64);
-    floatint64 = parseInt(floathex64, 16).toString();
     hexfloat64 = hex64ToHexFloat64(floathex64);
   }
   if (hex32 !== "unknown") {
-    int32 = parseInt(hex32, 16).toString();
+    int32 = integerHexToInt(hex32, 4);
+    uint32 = parseInt(hex32, 16).toString();
   }
   if (hex64 !== "unknown") {
-    int64 = parseInt(hex64, 16).toString();
-  }
-
-  if (strtype === "integer") {
-    const integer = parseInt(input, 10);
-    if (integer > 0xffffffff || integer < -0xffffffff) {
-      int32 = "unknown";
-      int64 = integer.toString();
-    } else {
-      int32 = integer.toString();
-      int64 = integer.toString();
-    }
+    int64 = integerHexToInt(hex64, 8);
+    uint64 = parseInt(hex64, 16).toString();
   }
 
   let floatdata: any = {};
@@ -438,8 +446,6 @@ function pasreNumber(input: string): any {
   floatdata.floathex64 = floathex64;
   floatdata.float32 = float32;
   floatdata.float64 = float64;
-  floatdata.floatint32 = floatint32;
-  floatdata.floatint64 = floatint64;
   floatdata.hexfloat32 = hexfloat32;
   floatdata.hexfloat64 = hexfloat64;
 
@@ -447,12 +453,14 @@ function pasreNumber(input: string): any {
   intdata.hex64 = hex64;
   intdata.int32 = int32;
   intdata.int64 = int64;
+  intdata.uint32 = uint32;
+  intdata.uint64 = uint64;
 
-  return {floatdata, intdata};
+  return { floatdata, intdata };
 }
 
 export function pasreNumberMarkdown(input: string): string {
-  let {floatdata, intdata} = pasreNumber(input);
+  let { floatdata, intdata } = pasreNumber(input);
 
   let hoverMessage = "";
 
@@ -460,8 +468,6 @@ export function pasreNumberMarkdown(input: string): string {
   let floathex64 = floatdata.floathex64;
   let float32 = floatdata.float32;
   let float64 = floatdata.float64;
-  let floatint32 = floatdata.floatint32;
-  let floatint64 = floatdata.floatint64;
   let hexfloat32 = floatdata.hexfloat32;
   let hexfloat64 = floatdata.hexfloat64;
 
@@ -469,6 +475,8 @@ export function pasreNumberMarkdown(input: string): string {
   let hex64 = intdata.hex64;
   let int32 = intdata.int32;
   let int64 = intdata.int64;
+  let uint32 = intdata.uint32;
+  let uint64 = intdata.uint64;
 
   if (floathex32 !== "unknown" || floathex64 !== "unknown") {
     hoverMessage = hoverMessage + "| dataType | formart | output |\n";
@@ -477,36 +485,34 @@ export function pasreNumberMarkdown(input: string): string {
   }
   if (floathex32 !== "unknown") {
     hoverMessage = hoverMessage + `| float | %08x | ${floathex32} |` + "\n";
-    hoverMessage = hoverMessage + `| float | %d | ${floatint32} |` + "\n";
     hoverMessage = hoverMessage + `| float | %e | ${float32} |` + "\n";
     hoverMessage = hoverMessage + `| float | %a | ${hexfloat32} |` + "\n";
   }
   if (floathex64 !== "unknown") {
     hoverMessage = hoverMessage + `| double | %016llx | ${floathex64} |` + "\n";
-    hoverMessage = hoverMessage + `| double | %lld | ${floatint64} |` + "\n";
     hoverMessage = hoverMessage + `| double | %e | ${float64} |` + "\n";
     hoverMessage = hoverMessage + `| double | %a | ${hexfloat64} |` + "\n";
   }
   if (hex32 !== "unknown") {
     hoverMessage = hoverMessage + `| int | %08x | ${hex32} |` + "\n";
     hoverMessage = hoverMessage + `| int | %d | ${int32} |` + "\n";
+    hoverMessage = hoverMessage + `| int | %u | ${uint32} |` + "\n";
   }
   if (hex64 !== "unknown") {
     hoverMessage = hoverMessage + `| long | %016llx | ${hex64} |` + "\n";
     hoverMessage = hoverMessage + `| long | %lld | ${int64} |` + "\n";
+    hoverMessage = hoverMessage + `| long | %llu | ${uint64} |` + "\n";
   }
   return hoverMessage;
 }
 
 export function pasreNumberWebview(input: string): string {
-  let {floatdata, intdata} = pasreNumber(input);
+  let { floatdata, intdata } = pasreNumber(input);
 
   let floathex32 = floatdata.floathex32;
   let floathex64 = floatdata.floathex64;
   let float32 = floatdata.float32;
   let float64 = floatdata.float64;
-  let floatint32 = floatdata.floatint32;
-  let floatint64 = floatdata.floatint64;
   let hexfloat32 = floatdata.hexfloat32;
   let hexfloat64 = floatdata.hexfloat64;
 
@@ -559,10 +565,6 @@ export function pasreNumberWebview(input: string): string {
                     <td>${floathex32}</td>
                 </tr>
                 <tr>
-                    <td>%d</td>
-                    <td>${floatint32}</td>
-                </tr>
-                <tr>
                     <td>%e</td>
                     <td>${float32}</td>
                 </tr>
@@ -574,10 +576,6 @@ export function pasreNumberWebview(input: string): string {
                     <td rowspan="4">double</td>
                     <td>%016llx</td>
                     <td>${floathex64}</td>
-                </tr>
-                <tr>
-                    <td>%lld</td>
-                    <td>${floatint64}</td>
                 </tr>
                 <tr>
                     <td>%e</td>

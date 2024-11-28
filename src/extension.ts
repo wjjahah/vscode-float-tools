@@ -16,6 +16,7 @@ class MyHoverProvider {
     const word = range ? document.getText(range) : undefined;
 
     if (word) {
+      // console.log(`word = (${word})`);
       const retMessage = pasreNumberMarkdown(word);
 
       if (retMessage !== "") {
