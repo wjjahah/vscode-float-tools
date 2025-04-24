@@ -282,12 +282,12 @@ function hexFloat64ToFloat64(hex: string): string {
   return hexFloat32ToFloat32(hex);
 }
 
-function formartIntegerHex(value: number, nbyte: 4 | 8): string {
-  if (value < 0) {
+function formartIntegerHex(value: bigint, nbyte: 4 | 8): string {
+  if (value < 0n) {
     const bits = nbyte * 8;
     const mask = (1n << BigInt(bits)) - 1n;
 
-    const complement = (~BigInt(Math.abs(value)) + 1n) & mask;
+    const complement = (~BigInt(-value) + 1n) & mask;
     // const complement = (~Math.abs(value) + 1) & mask;
     return complement.toString(16).padStart(nbyte, '0');
   }
@@ -303,9 +303,9 @@ function integerHexToInt(hexStr: string, nbyte: 4 | 8): string {
 
   if (isNegative) {
       num = num + maxValue;
-      return Number(num).toString(10);
+      return BigInt(num).toString(10);
   }
-  return Number(hexStr).toString(10);
+  return BigInt(hexStr).toString(10);
 }
 
 type NumberType =
@@ -314,7 +314,7 @@ type NumberType =
   | "scientific float"
   | "integer"
   | "hex float"
-  | "unknown";
+  | "N/A";
 
 function identifyNumberType(input: string): NumberType {
   // 正则表达式匹配整数
@@ -343,24 +343,24 @@ function identifyNumberType(input: string): NumberType {
   } else if (floatRegex.test(input)) {
     return "float";
   } else {
-    return "unknown";
+    return "N/A";
   }
 }
 
 function pasreNumber(input: string): any {
-  let floathex32 = "unknown";
-  let floathex64 = "unknown";
-  let float32 = "unknown";
-  let float64 = "unknown";
-  let hexfloat32 = "unknown";
-  let hexfloat64 = "unknown";
+  let floathex32 = "N/A";
+  let floathex64 = "N/A";
+  let float32 = "N/A";
+  let float64 = "N/A";
+  let hexfloat32 = "N/A";
+  let hexfloat64 = "N/A";
 
-  let hex32 = "unknown";
-  let hex64 = "unknown";
-  let int32 = "unknown";
-  let int64 = "unknown";
-  let uint32 = "unknown";
-  let uint64 = "unknown";
+  let hex32 = "N/A";
+  let hex64 = "N/A";
+  let int32 = "N/A";
+  let int64 = "N/A";
+  let uint32 = "N/A";
+  let uint64 = "N/A";
 
   const strtype = identifyNumberType(input);
   if (strtype === "hex") {
@@ -405,7 +405,8 @@ function pasreNumber(input: string): any {
       floathex64 = float64ToHex64(float.toString());
     }
 
-    const integer = parseInt(input, 10);
+    const integer = BigInt(input);
+    console.log(`integer = (${integer})`);
     const integerHexLength = integer.toString(16).replace(/^-/, "").length;
     if (integerHexLength > 8) {
       hex64 = "0x" + formatHex64(formartIntegerHex(integer, 8));
@@ -422,21 +423,21 @@ function pasreNumber(input: string): any {
   }
 
 
-  if (floathex32 !== "unknown") {
+  if (floathex32 !== "N/A") {
     float32 = hex32ToFloat32(floathex32);
     hexfloat32 = hex32ToHexFloat32(floathex32);
   }
-  if (floathex64 !== "unknown") {
+  if (floathex64 !== "N/A") {
     float64 = hex64ToFloat64(floathex64);
     hexfloat64 = hex64ToHexFloat64(floathex64);
   }
-  if (hex32 !== "unknown") {
+  if (hex32 !== "N/A") {
     int32 = integerHexToInt(hex32, 4);
-    uint32 = parseInt(hex32, 16).toString();
+    uint32 = BigInt(hex32).toString();
   }
-  if (hex64 !== "unknown") {
+  if (hex64 !== "N/A") {
     int64 = integerHexToInt(hex64, 8);
-    uint64 = parseInt(hex64, 16).toString();
+    uint64 = BigInt(hex64).toString();
   }
 
   let floatdata: any = {};
@@ -478,27 +479,27 @@ export function pasreNumberMarkdown(input: string): string {
   let uint32 = intdata.uint32;
   let uint64 = intdata.uint64;
 
-  if (floathex32 !== "unknown" || floathex64 !== "unknown") {
+  if (floathex32 !== "N/A" || floathex64 !== "N/A") {
     hoverMessage = hoverMessage + "| dataType | formart | output |\n";
     hoverMessage = hoverMessage + "|:--------------|:--------------|--------------|\n";
     hoverMessage = hoverMessage + `| select | ${identifyNumberType(input)} | ${input} |` + "\n";
   }
-  if (floathex32 !== "unknown") {
+  if (floathex32 !== "N/A") {
     hoverMessage = hoverMessage + `| float | %08x | ${floathex32} |` + "\n";
     hoverMessage = hoverMessage + `| float | %e | ${float32} |` + "\n";
     hoverMessage = hoverMessage + `| float | %a | ${hexfloat32} |` + "\n";
   }
-  if (floathex64 !== "unknown") {
+  if (floathex64 !== "N/A") {
     hoverMessage = hoverMessage + `| double | %016llx | ${floathex64} |` + "\n";
     hoverMessage = hoverMessage + `| double | %e | ${float64} |` + "\n";
     hoverMessage = hoverMessage + `| double | %a | ${hexfloat64} |` + "\n";
   }
-  if (hex32 !== "unknown") {
+  if (hex32 !== "N/A") {
     hoverMessage = hoverMessage + `| int | %08x | ${hex32} |` + "\n";
     hoverMessage = hoverMessage + `| int | %d | ${int32} |` + "\n";
     hoverMessage = hoverMessage + `| int | %u | ${uint32} |` + "\n";
   }
-  if (hex64 !== "unknown") {
+  if (hex64 !== "N/A") {
     hoverMessage = hoverMessage + `| long | %016llx | ${hex64} |` + "\n";
     hoverMessage = hoverMessage + `| long | %lld | ${int64} |` + "\n";
     hoverMessage = hoverMessage + `| long | %llu | ${uint64} |` + "\n";
@@ -555,12 +556,14 @@ export function pasreNumberWebview(input: string): string {
             <h2>Select Number All Formart Table</h2>
             <table>
                 <tr>
+                    <th>reinterpret</th>
                     <th>dataType</th>
                     <th>formart</th>
                     <th>output</th>
                 </tr>
                 <tr>
-                    <td rowspan="4">float</td>
+                    <td rowspan="6">As float</td>
+                    <td rowspan="3">float</td>
                     <td>%08x</td>
                     <td>${floathex32}</td>
                 </tr>
@@ -573,7 +576,7 @@ export function pasreNumberWebview(input: string): string {
                     <td>${hexfloat32}</td>
                 </tr>
                 <tr>
-                    <td rowspan="4">double</td>
+                    <td rowspan="3">double</td>
                     <td>%016llx</td>
                     <td>${floathex64}</td>
                 </tr>
@@ -586,6 +589,7 @@ export function pasreNumberWebview(input: string): string {
                     <td>${hexfloat64}</td>
                 </tr>
                 <tr>
+                    <td rowspan="6">As integer</td>
                     <td rowspan="2">int</td>
                     <td>%08x</td>
                     <td>${hex32}</td>

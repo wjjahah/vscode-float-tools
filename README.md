@@ -50,6 +50,10 @@
 ### 0.1.0
 增加浮点数末尾f字母的匹配，修改整数的解释，增加%u类型解释，%d支持负数
 
+### 0.1.1
+修复int类型超过2^53 - 1的值出错的bug
+修复webview页面显示错乱问题
+
 ## For more information
 
 * [float-tools github](https://github.com/wjjahah/vscode-float-tools.git)
